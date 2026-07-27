@@ -287,16 +287,16 @@ startup
 	settings.Add("Assets (start)", false, "Assets (start)");
 	settings.Add("Odd Jobs", false, "Odd Jobs");
 	settings.Add("Collectibles", false, "Collectibles");
-	settings.Add("No SSU Specific", false, "No SSU Specific");
+	settings.Add("No SSU Specific", false, "Any% No SSU traditional segments");
 
-	// Settings for traditional Any% No SSU segment splits by Anti.
+	// Settings for Any% No SSU traditional segment splits by Anti.
 	settings.CurrentDefaultParent = "No SSU Specific";
-	settings.Add("Tswine", true, "Treacherous Swine Start");
-	settings.Add("StarIsland", true, "The Chase Start");
-	settings.Add("SYS", true, "Sir Yes Sir Start");
+	settings.Add("Tswine", true, "Treacherous Swine start");
+	settings.Add("StarIsland", true, "The Chase start");
+	settings.Add("SYS", true, "Sir, Yes Sir! start");
 	settings.Add("DiazDed", true, "Diaz Dead");
-	settings.Add("CopLandEnd", true, "Cop Land Fadeout");
-	settings.Add("CTC", true, "Cap the Collector Start");
+	settings.Add("CopLandEnd", true, "Cop Land fadeout");
+	settings.Add("CTC", true, "Cap the Collector start");
 
 	// Adding mission headers for mission end.
 	settings.CurrentDefaultParent = "Missions (end)";
@@ -669,55 +669,55 @@ split
 		}
 	}
 	
-	//no ssu splits
-	if ((settings["Tswine"]) && (!vars.split.Contains("Tswine"))) {		
-		if (vars.cameraAt(current.camX, current.camY, current.camZ, -229.438f, -1364.204f, 12.607f)) {
-			if(current.tswineCall) {
-				vars.split.Add("Tswine");
-				vars.doSplit = true;
-			}
+	// Any% No SSU traditional segment splits by Anti.
+	// Remove this check for JP once support for cam variables is properly implemented in other versions.
+	if (version == "Japanese") {
+		if (settings["Tswine"]
+				&& !vars.split.Contains("Tswine")
+				&& vars.cameraAt(current.camX, current.camY, current.camZ, -229.438f, -1364.204f, 12.607f)
+				&& current.tswineCall) {
+			vars.split.Add("Tswine");
+			vars.doSplit = true;
 		}
-	}
-	if ((settings["StarIsland"]) && (!vars.split.Contains("StarIsland"))) {
-		if (vars.cameraAt(current.camX, current.camY, current.camZ, -381.923f, -473.339f, 48.904f)) {
+
+		if (settings["StarIsland"]
+				&& !vars.split.Contains("StarIsland")
+				&& vars.cameraAt(current.camX, current.camY, current.camZ, -381.923f, -473.339f, 48.904f)) {
 			vars.split.Add("StarIsland");
 			vars.doSplit = true;
 		}
-	}
-	if ((settings["SYS"]) && (!vars.split.Contains("SYS"))) {
-		if (vars.cameraAt(current.camX, current.camY, current.camZ, -229.438f, -1364.204f, 12.607f)) {
-			if(current.sysCall) {
-				vars.split.Add("SYS");
-				vars.doSplit = true;
-			}
+
+		if (settings["SYS"]
+				&& !vars.split.Contains("SYS")
+				&& vars.cameraAt(current.camX, current.camY, current.camZ, -229.438f, -1364.204f, 12.607f)
+				&& current.sysCall) {
+			vars.split.Add("SYS");
+			vars.doSplit = true;
 		}
-	}
-	if ((settings["DiazDed"]) && (!vars.split.Contains("DiazDed"))) {
-		if ((Math.Abs(current.camX + 393.7734f) < 0.01f) && (Math.Abs(current.camY + 555.7239f) < 0.01f) && (current.camZ > 26.9) && (current.camZ < 27)) {
+
+		if (settings["DiazDed"]
+				&& !vars.split.Contains("DiazDed")
+				&& Math.Abs(current.camX + 393.7734f) < 0.01f
+				&& Math.Abs(current.camY + 555.7239f) < 0.01f
+				&& current.camZ > 26.9f
+				&& current.camZ < 27f) {
 			vars.split.Add("DiazDed");
 			vars.doSplit = true;
 		}
-	}
-	if ((settings["CopLandEnd"]) && (!vars.split.Contains("CopLandEnd"))) {
-		if (vars.cameraAt(current.camX, current.camY, current.camZ, -369.1f, -467.9f, 22.7f)) {
+
+		if (settings["CopLandEnd"]
+				&& !vars.split.Contains("CopLandEnd")
+				&& vars.cameraAt(current.camX, current.camY, current.camZ, -369.1f, -467.9f, 22.7f)) {
 			vars.split.Add("CopLandEnd");
 			vars.doSplit = true;
 		}
-	}
-	if ((settings["CTC"]) && (!vars.split.Contains("CTC"))) {
-		if (vars.cameraAt(current.camX, current.camY, current.camZ, -1039.093f, -293.828f, 27.81f)) {
-			if(current.ctcCall) {
-				vars.split.Add("CTC");
-				vars.doSplit = true;
-			}
-		}
-		if ((settings["CTC"]) && (!vars.split.Contains("CTC"))) {
-			if ((current.camX + " " + current.camY + " " + current.camZ == "-1039.093 -293.828 27.81")) {
-				if(current.ctcCall) {
-					vars.split.Add("CTC");
-					vars.doSplit = true;
-				}
-			}
+
+		if (settings["CTC"]
+				&& !vars.split.Contains("CTC")
+				&& vars.cameraAt(current.camX, current.camY, current.camZ, -1039.093f, -293.828f, 27.81f)
+				&& current.ctcCall) {
+			vars.split.Add("CTC");
+			vars.doSplit = true;
 		}
 	}
 
