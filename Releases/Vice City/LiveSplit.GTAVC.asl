@@ -83,7 +83,7 @@ startup
 			{0x421608, "Jury Fury"},
 			{0x42160C, "Riot"}
 		}},
-			{"Cortez", new Dictionary<int, string> {
+		{"Cortez", new Dictionary<int, string> {
 			{0x421614, "Treacherous Swine"},
 			{0x421618, "Mall Shootout"},
 			{0x42161C, "Guardian Angels"},
@@ -219,12 +219,109 @@ startup
 		}},
 	};
 
+	// Story, asset and side mission script names.
+	vars.missionScripts = new Dictionary<int, string> {
+		// Standalone missions and assets
+		{0x421BFC, "COKERUN"}, // Checkpoint Charlie
+		{0x421C10, "ICECRE1"}, // Distribution
+		{0x4223A0, null}, // Pole Position uses title detection.
+
+		// Ken Rosenberg
+		{0x421600, "LAWYER1"}, // The Party
+		{0x421604, "LAWYER2"}, // Back Alley Brawl
+		{0x421608, "LAWYER3"}, // Jury Fury
+		{0x42160C, "LAWYER4"}, // Riot
+
+		// Cortez
+		{0x421614, "GENERL1"}, // Treacherous Swine
+		{0x421618, "COL2"}, // Mall Shootout
+		{0x42161C, "GENERL3"}, // Guardian Angels
+		{0x421620, "COL_4"}, // Sir, Yes Sir!
+		{0x421624, "COL_5"}, // All Hands On Deck!
+
+		// Diaz
+		{0x42162C, "BARON1"}, // The Chase
+		{0x421630, "BARON2"}, // Phnom Penh '86
+		{0x421634, "BARON3"}, // The Fastest Boat
+		{0x421638, "BARON4"}, // Supply & Demand
+		{0x42163C, "BARON5"}, // Rub Out
+
+		// Kent Paul
+		{0x421648, "KENT1"}, // Death Row
+
+		// Mr. Black
+		{0x421728, "ASSIN1"}, // Road Kill
+		{0x42172C, "ASSIN2"}, // Waste the Wife
+		{0x421730, "ASSIN3"}, // Autocide
+		{0x421734, "ASSIN4"}, // Check Out at the Check In
+		{0x421738, "ASSIN5"}, // Loose Ends
+
+		// Avery
+		{0x421650, "SERG1"}, // Four Iron
+		{0x421654, "SERG3"}, // Demolition Man
+		{0x421658, "SERG2"}, // Two Bit Hit
+
+		// Umberto Robina
+		{0x4216DC, "CUBAN1"}, // Stunt Boat Challenge
+		{0x4216E0, "CUBAN2"}, // Cannon Fodder
+		{0x4216E4, "CUBAN3"}, // Naval Engagement
+		{0x4216E8, "CUBAN4"}, // Trojan Voodoo
+
+		// Auntie Poulet
+		{0x4216F0, "HAIT1"}, // Juju Scramble
+		{0x4216F4, "HAIT2"}, // Bombs Away!
+		{0x4216F8, "HAIT3"}, // Dirty Lickin's
+
+		// Love Fist
+		{0x421700, "ROCKB1"}, // Love Juice
+		{0x421704, "ROCKB2"}, // Psycho Killer
+		{0x421708, "ROCKB3"}, // Publicity Tour
+
+		// Mitch Baker
+		{0x4216CC, "BIKE1"}, // Alloy Wheels of Steel
+		{0x4216D0, "BIKE2"}, // Messing with the Man
+		{0x4216D4, "BIKE3"}, // Hog Tied
+
+		// Vercetti Mansion
+		{0x4216A8, "PROTEC1"}, // Shakedown
+		{0x4216AC, "PROTEC2"}, // Bar Brawl
+		{0x4216B0, "PROTEC3"}, // Cop Land
+		{0x4216B8, "FIN_1"}, // Keep your Friends Close...
+
+		// Printworks
+		{0x4216C0, "COUNT1"}, // Spilling the Beans
+		{0x4216C4, "COUNT2"}, // Hit the Courier
+		{0x4216B4, "CAP_1"}, // Cap the Collector
+
+		// Film Studio
+		{0x421684, "PORNO1"}, // Recruitment Drive
+		{0x421688, "PORNO2"}, // Dildo Dodo
+		{0x42168C, "PORNO3"}, // Martha's Mug Shot
+		{0x421690, "PORNO4"}, // G-spotlight
+
+		// Kaufman Cabs
+		{0x421750, "TAXWAR1"}, // V.I.P.
+		{0x421754, "TAXWAR2"}, // Friendly Rivalry
+		{0x421758, "TAXWAR3"}, // Cabmaggedon
+
+		// Malibu
+		{0x421660, "BANKJO1"}, // No Escape?
+		{0x421664, "BANKJO2"}, // The Shootist
+		{0x421668, "BANKJO3"}, // The Driver
+		{0x42166C, "BANKJO4"}, // The Job
+
+		// Phil Cassidy
+		{0x421678, "PHIL1"}, // Gun Runner
+		{0x42167C, "PHIL2"} // Boomshine Saigon
+	};
+
 	// Collections
 	// ----------------------------------------
 
-	// Creating separate lists for easier checking later.
+	// Creating separate collections for easier checking later.
 	vars.missionList = new List<string>();
-	vars.missionStartList = new List<string>();
+	// Mission-start setting IDs mapped to script names; null keeps title detection.
+	vars.missionStarts = new Dictionary<string, string>();
 	vars.collectibleList = new List<string>();
 	vars.stadList = new List<string>(); // Stadium missions list
 
@@ -267,7 +364,7 @@ startup
 				isEnabled = false; // Force disable the settings for these missions.
 			}
 			settings.Add(address.Value + " (start)", isEnabled, address.Value, parent + " (start)");
-			vars.missionStartList.Add(address.Value + " (start)");
+			vars.missionStarts.Add(address.Value + " (start)", vars.missionScripts[address.Key]);
 		}
 	};
 
@@ -361,7 +458,7 @@ startup
 	addMissionHeaderStart("Malibu", false, "Malibu");
 	addMissionHeaderStart("Phil Cassidy", false, "Phil Cassidy");
 
-	// Adding mission start settings for singleton assets and storing in missionStartList.
+	// Adding mission start settings for singleton assets and storing in missionStarts.
 	foreach (var mission in vars.mission2) {
 		var missionName = mission.Key;
 		if (missionName == "Rifle Range (45 Points)") {
@@ -381,12 +478,23 @@ startup
 			}
 		}
 		settings.Add(splitName + " (start)", false, missionName);
-		vars.missionStartList.Add(splitName + " (start)");
+		vars.missionStarts.Add(splitName + " (start)", vars.missionScripts[mission.Value]);
 	}
 
-	// Adding SSA purchase setting and storing in missionStartList.
-	settings.Add("Sunshine Autos (start)", false, "Sunshine Autos (purchase)");
-	vars.missionStartList.Add("Sunshine Autos (start)");
+	// Adding asset purchase settings and storing in missionStarts.
+	foreach (var asset in new Dictionary<string, string> {
+		{"Boatyard (purchase)", "BOATBY"},
+		{"Printworks (purchase)", "BUYPRO1"},
+		{"Film Studio (purchase)", "BUYPRO2"},
+		{"Malibu (purchase)", "BUYPRO3"},
+		{"Pole Position (purchase)", "BUYPRO4"},
+		{"Sunshine Autos (start)", "CARBUY1"}, // Preserving the naming for backwards compat with existing settings, could obviously be purchase too.
+		{"Cherry Poppers (purchase)", "ICECUT"},
+		{"Kaufman Cabs (purchase)", "TAXCUT"},
+	}) {
+		settings.Add(asset.Key, false);
+		vars.missionStarts.Add(asset.Key, asset.Value);
+	}
 
 	// Adding mission end setting for every other side mission.
 	settings.CurrentDefaultParent = "Odd Jobs";
@@ -526,6 +634,7 @@ init
 
 	// This is all "split at start of mission" address tracking.
 	// ---------------------------------------------------------
+	vars.scriptPoolAddress = IntPtr.Add(modules.First().BaseAddress, 0x3DFC40 + vars.offset);
 
 	var missionNameAddress = (version == "Japanese") ? 0x38A008 : 0x38D000 + vars.offset; 
 	vars.memoryWatchers.Add(new StringWatcher(new DeepPointer(missionNameAddress), 64) { Name = "missionName"});
@@ -553,6 +662,9 @@ init
 
 	// Watch for load/saving to prevent splitting after load (this can happen if memory addresses change)
 	vars.memoryWatchers.Add(new MemoryWatcher<bool>(new DeepPointer(0x38D724 + vars.offset)) { Name = "Loading" });
+	vars.useMissionScripts = null;
+	vars.activeMissionScripts = null;
+	vars.previousMissionScripts = null;
 }
 
 update
@@ -564,6 +676,64 @@ update
 
 	// Update all of the memory readings for the mission memory addresses.
 	vars.memoryWatchers.UpdateAll(game);
+
+	// Skip extra script checks when no mission-start splits are enabled.
+	if (vars.useMissionScripts == null || timer.CurrentPhase == TimerPhase.NotRunning || vars.prevPhase == TimerPhase.NotRunning) {
+		vars.useMissionScripts = false;
+		foreach (var mission in vars.missionStarts) {
+			if (mission.Value != null && settings[mission.Key]) {
+				vars.useMissionScripts = true;
+				break;
+			}
+		}
+	}
+
+	if (vars.useMissionScripts) {
+		// Track loads while the timer is stopped to prevent an immediate split when it starts.
+		if (vars.memoryWatchers["Loading"].Current) {
+			vars.lastLoad = Environment.TickCount;
+		}
+
+		vars.previousMissionScripts = vars.activeMissionScripts;
+		vars.activeMissionScripts = new HashSet<string>();
+
+		// The game stores running scripts in a table of 128 reusable entries.
+		// Missions have no fixed entry, so search the whole table to find active missions.
+		const int scriptSize = 0x88;
+		const int scriptNameOffset = 0x08;
+		const int scriptNameLength = 8;
+		const int activeFlagOffset = 0x78;
+		IntPtr scriptPoolAddress = vars.scriptPoolAddress;
+
+		for (int slot = 0; slot < 128; slot++) {
+			IntPtr scriptAddress = scriptPoolAddress + slot * scriptSize;
+			byte isActive;
+
+			if (!game.ReadValue<byte>(scriptAddress + activeFlagOffset, out isActive)) {
+				vars.activeMissionScripts = vars.previousMissionScripts;
+				break;
+			}
+
+			if (isActive != 1) {
+				continue;
+			}
+
+			var scriptName = game.ReadString(scriptAddress + scriptNameOffset, ReadStringType.ASCII, scriptNameLength);
+			if (scriptName == null) {
+				vars.activeMissionScripts = vars.previousMissionScripts;
+				break;
+			}
+
+			scriptName = scriptName.ToUpperInvariant();
+			if (vars.missionStarts.ContainsValue(scriptName)) {
+				vars.activeMissionScripts.Add(scriptName);
+			}
+		}
+	}
+	else {
+		vars.activeMissionScripts = null;
+		vars.previousMissionScripts = null;
+	}
 
 	// Reset some variables when the timer is started, so we don't need to rely on the start action in this script.
 	if (timer.CurrentPhase != vars.prevPhase) {
@@ -623,14 +793,29 @@ split
 	}
 
 	// Mission start splitting.
-	foreach (var mission in vars.missionStartList) {
-		var missionWatcher = vars.memoryWatchers["missionName"].Current;
-		var missionName = mission.Replace(" (start)", "");
-		if (version == "Japanese" && missionName == "Distribution") {
-			missionName = "Ice Cream Mission"; // Different title in JP.
+	foreach (var mission in vars.missionStarts) {
+		var scriptName = mission.Value;
+		bool missionStarted;
+
+		if (scriptName != null) {
+			if (!vars.useMissionScripts) {
+				continue;
+			}
+
+			missionStarted = vars.activeMissionScripts != null
+				&& vars.previousMissionScripts != null
+				&& vars.activeMissionScripts.Contains(scriptName)
+				&& !vars.previousMissionScripts.Contains(scriptName);
 		}
-		if (settings[mission] && vars.memoryWatchers["missionName"].Current != vars.memoryWatchers["missionName"].Old && missionWatcher == missionName && !vars.split.Contains(mission)) {
-			vars.split.Add(mission);
+		else {
+			// Pole Position (entry) retains its original title detection.
+			var missionWatcher = vars.memoryWatchers["missionName"];
+			var missionName = mission.Key.Replace(" (start)", "");
+
+			missionStarted = missionWatcher.Current != missionWatcher.Old && missionWatcher.Current == missionName;
+		}
+		if (settings[mission.Key] && missionStarted && !vars.split.Contains(mission.Key)) {
+			vars.split.Add(mission.Key);
 			vars.doSplit = true;
 		}
 	}
