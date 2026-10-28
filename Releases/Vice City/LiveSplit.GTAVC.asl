@@ -221,11 +221,8 @@ startup
 
 	// Story, asset and side mission script names.
 	vars.missionScripts = new Dictionary<int, string> {
-		// Standalone missions and assets
-		{0x421BFC, "COKERUN"}, // Checkpoint Charlie
-		{0x421C10, "ICECRE1"}, // Distribution
-
 		// Ken Rosenberg
+		{0x4215F8, "HOTEL"}, // An Old Friend
 		{0x421600, "LAWYER1"}, // The Party
 		{0x421604, "LAWYER2"}, // Back Alley Brawl
 		{0x421608, "LAWYER3"}, // Jury Fury
@@ -311,7 +308,36 @@ startup
 
 		// Phil Cassidy
 		{0x421678, "PHIL1"}, // Gun Runner
-		{0x42167C, "PHIL2"} // Boomshine Saigon
+		{0x42167C, "PHIL2"}, // Boomshine Saigon
+
+		// Stadium Events
+		{0x422B74, "OVALRNG"}, // Hotring
+		{0x422B78, "MM"}, // Bloodring
+		{0x42135C, "KICKST"}, // Dirtring
+
+		// Chopper Checkpoints
+		{0x422B44, "HELI2SC"}, // Ocean Beach Chopper Checkpoint
+		{0x422B48, "HELI3SC"}, // Vice Point Chopper Checkpoint
+		{0x422B4C, "HELI4SC"}, // Little Haiti Chopper Checkpoint
+		{0x422B40, "HELI1SC"}, // Downtown Chopper Checkpoint
+
+		// Off-Road Challenges
+		{0x4217FC, "CARPRK1"}, // Cone Crazy
+		{0x4217CC, "T4X4_1"}, // PCJ Playground
+		{0x421830, "BMX_2"}, // Test Track
+		{0x42182C, "BMX_1"}, // Trial By Dirt
+
+		// RC Top-Fun
+		{0x429344, "RCRACE1"}, // RC Bandit
+		{0x429714, "RCPLNE1"}, // RC Baron
+		{0x4291F0, "RCHELI"}, // RC Raider
+
+		// Vehicle Missions
+		{0x422B3C, "FIRETRU"}, // Firefighter
+		{0x422B34, "AMBULAN"}, // Paramedic
+		{0x421894, "PIZZA"}, // Pizza Boy
+		{0x421854, "TAXI"}, // Taxi
+		{0x422B38, "COPCAR"} // Vigilante
 	};
 
 	// Collections
@@ -355,15 +381,17 @@ startup
 	Action<string, bool> addMissionChainStart = (missions, defaultValue) => {
 		var parent = missions;
 		foreach (var address in vars.missionAddresses[missions]) {
-			if (address.Value == "An Old Friend") {
-				continue; // Don't need this.
-			}
 			bool isEnabled = defaultValue;
-			if (/* address.Value == "An Old Friend" || */ address.Value == "The Party" || address.Value == "All Hands On Deck!") {
+			if (address.Value == "An Old Friend" || address.Value == "The Party" || address.Value == "All Hands On Deck!") {
 				isEnabled = false; // Force disable the settings for these missions.
 			}
-			settings.Add(address.Value + " (start)", isEnabled, address.Value, parent + " (start)");
-			vars.missionStarts.Add(address.Value + " (start)", vars.missionScripts[address.Key]);
+			var missionName = address.Value;
+			if (parent == "Vehicle Missions") {
+				// Start labels do not need completion targets such as "(Level 12)".
+				missionName = missionName.Substring(0, missionName.LastIndexOf(" ("));
+			}
+			settings.Add(missionName + " (start)", isEnabled, missionName, parent + " (start)");
+			vars.missionStarts.Add(missionName + " (start)", vars.missionScripts[address.Key]);
 		}
 	};
 
@@ -381,7 +409,8 @@ startup
 	settings.Add("Assets (end)", true, "Assets (end)");
 	settings.Add("Missions (start)", false, "Missions (start)");
 	settings.Add("Assets (start)", false, "Assets (start)");
-	settings.Add("Odd Jobs", false, "Odd Jobs");
+	settings.Add("Odd Jobs", false, "Odd Jobs (end)");
+	settings.Add("Odd Jobs (start)", false, "Odd Jobs (start)");
 	settings.Add("Collectibles", false, "Collectibles");
 	settings.Add("No SSU Specific", false, "Any% No SSU traditional segments");
 
@@ -458,20 +487,10 @@ startup
 	addMissionHeaderStart("Phil Cassidy", false, "Phil Cassidy");
 
 	// Adding mission start settings for singleton assets and storing in missionStarts.
-	foreach (var mission in vars.mission2) {
-		var missionName = mission.Key;
-		if (!vars.missionScripts.ContainsKey(mission.Value)) {
-			continue;
-		}
-		var splitName = missionName;
-		// Strip the property name. We don't want it in the split/setting name.
-		var paranthesisIndex = splitName.LastIndexOf(" (", splitName.Length - 1);
-		if (paranthesisIndex > -1) {
-			splitName = missionName.Substring(0, paranthesisIndex);
-		}
-		settings.Add(splitName + " (start)", false, missionName);
-		vars.missionStarts.Add(splitName + " (start)", vars.missionScripts[mission.Value]);
-	}
+	settings.Add("Checkpoint Charlie (start)", false, "Checkpoint Charlie (Boatyard)");
+	vars.missionStarts.Add("Checkpoint Charlie (start)", "COKERUN");
+	settings.Add("Distribution (start)", false, "Distribution (Cherry Poppers)");
+	vars.missionStarts.Add("Distribution (start)", "ICECRE1");
 
 	// Preserving the naming for backwards compat with existing settings.
 	settings.Add("Sunshine Autos (start)", false, "Sunshine Autos (purchase)");
@@ -499,6 +518,17 @@ startup
 	addMissionHeader("Off-Road Challenges", false, "Off-Road Challenges");
 	addMissionHeader("RC Top-Fun", false, "RC Top-Fun");
 	addMissionHeader("Vehicle Missions", false, "Vehicle Missions");
+
+	// Adding mission start setting for every other side mission.
+	settings.CurrentDefaultParent = "Odd Jobs (start)";
+	settings.Add("Rifle Range (start)", false, "Rifle Range");
+	vars.missionStarts.Add("Rifle Range (start)", "RANGE");
+	addMissionHeaderStart("Stadium Events", false, "Stadium Events");
+	addMissionHeaderStart("Chopper Checkpoints", false, "Chopper Checkpoints");
+	addMissionHeaderStart("Off-Road Challenges", false, "Off-Road Challenges");
+	addMissionHeaderStart("RC Top-Fun", false, "RC Top-Fun");
+	addMissionHeaderStart("Vehicle Missions", false, "Vehicle Missions");
+	settings.SetToolTip("Vehicle Missions (start)", "WARNING: Only first vehicle mission start will be splitted");
 
 	// Collectibles (Packages, Rampages, USJs, Robberies, and Properties/Safehouses).
 	settings.CurrentDefaultParent = "Collectibles";
