@@ -473,14 +473,17 @@ startup
 		vars.missionStarts.Add(splitName + " (start)", vars.missionScripts[mission.Value]);
 	}
 
-	// Adding asset purchase settings and storing in missionStarts.
+	// Preserving the naming for backwards compat with existing settings.
+	settings.Add("Sunshine Autos (start)", false, "Sunshine Autos (purchase)");
+	vars.missionStarts.Add("Sunshine Autos (start)", "CARBUY1");
+
+	// Adding other asset purchase settings and storing in missionStarts.
 	foreach (var asset in new Dictionary<string, string> {
 		{"Boatyard (purchase)", "BOATBY"},
 		{"Printworks (purchase)", "BUYPRO1"},
 		{"Film Studio (purchase)", "BUYPRO2"},
 		{"Malibu (purchase)", "BUYPRO3"},
 		{"Pole Position (purchase)", "BUYPRO4"},
-		{"Sunshine Autos (start)", "CARBUY1"}, // Preserving the naming for backwards compat with existing settings, could obviously be purchase too.
 		{"Cherry Poppers (purchase)", "ICECUT"},
 		{"Kaufman Cabs (purchase)", "TAXCUT"},
 	}) {
