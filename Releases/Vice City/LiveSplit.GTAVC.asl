@@ -224,7 +224,6 @@ startup
 		// Standalone missions and assets
 		{0x421BFC, "COKERUN"}, // Checkpoint Charlie
 		{0x421C10, "ICECRE1"}, // Distribution
-		{0x4223A0, null}, // Pole Position uses title detection.
 
 		// Ken Rosenberg
 		{0x421600, "LAWYER1"}, // The Party
@@ -320,7 +319,7 @@ startup
 
 	// Creating separate collections for easier checking later.
 	vars.missionList = new List<string>();
-	// Mission-start setting IDs mapped to script names; null keeps title detection.
+	// Mission-start setting IDs mapped to script names.
 	vars.missionStarts = new Dictionary<string, string>();
 	vars.collectibleList = new List<string>();
 	vars.stadList = new List<string>(); // Stadium missions list
@@ -461,21 +460,14 @@ startup
 	// Adding mission start settings for singleton assets and storing in missionStarts.
 	foreach (var mission in vars.mission2) {
 		var missionName = mission.Key;
-		if (missionName == "Rifle Range (45 Points)") {
-			continue; // Skip Rifle Range.
+		if (!vars.missionScripts.ContainsKey(mission.Value)) {
+			continue;
 		}
 		var splitName = missionName;
-		// Set the correct names for Pole Position.
-		if (missionName == "Pole Position ($300 Spent)") {
-			missionName = "Pole Position (entry)";
-			splitName = "The 'Pole Position Club'";
-		}
 		// Strip the property name. We don't want it in the split/setting name.
-		else {
-			var paranthesisIndex = splitName.LastIndexOf(" (", splitName.Length - 1);
-			if (paranthesisIndex > -1) {
-				splitName = missionName.Substring(0, paranthesisIndex);
-			}
+		var paranthesisIndex = splitName.LastIndexOf(" (", splitName.Length - 1);
+		if (paranthesisIndex > -1) {
+			splitName = missionName.Substring(0, paranthesisIndex);
 		}
 		settings.Add(splitName + " (start)", false, missionName);
 		vars.missionStarts.Add(splitName + " (start)", vars.missionScripts[mission.Value]);
@@ -636,9 +628,6 @@ init
 	// ---------------------------------------------------------
 	vars.scriptPoolAddress = IntPtr.Add(modules.First().BaseAddress, 0x3DFC40 + vars.offset);
 
-	var missionNameAddress = (version == "Japanese") ? 0x38A008 : 0x38D000 + vars.offset; 
-	vars.memoryWatchers.Add(new StringWatcher(new DeepPointer(missionNameAddress), 64) { Name = "missionName"});
-
 /* 	// A list of names and memory addresses for OMFs, both the main one and ones for side missions and such.
 	vars.OMFList = new List<string> {"OMFParamedic", "OMFFirefighter", "OMFTaxi", "OMFRampage", "OMFPhonecall", "OMFSaveGame"};
 	vars.memoryWatchers.Add(new MemoryWatcher<int>(new DeepPointer(0x421764 + vars.offset)) { Name = "OMF" });
@@ -681,7 +670,7 @@ update
 	if (vars.useMissionScripts == null || timer.CurrentPhase == TimerPhase.NotRunning || vars.prevPhase == TimerPhase.NotRunning) {
 		vars.useMissionScripts = false;
 		foreach (var mission in vars.missionStarts) {
-			if (mission.Value != null && settings[mission.Key]) {
+			if (settings[mission.Key]) {
 				vars.useMissionScripts = true;
 				break;
 			}
@@ -793,30 +782,17 @@ split
 	}
 
 	// Mission start splitting.
-	foreach (var mission in vars.missionStarts) {
-		var scriptName = mission.Value;
-		bool missionStarted;
-
-		if (scriptName != null) {
-			if (!vars.useMissionScripts) {
-				continue;
-			}
-
-			missionStarted = vars.activeMissionScripts != null
+	if (vars.useMissionScripts) {
+		foreach (var mission in vars.missionStarts) {
+			var scriptName = mission.Value;
+			bool missionStarted = vars.activeMissionScripts != null
 				&& vars.previousMissionScripts != null
 				&& vars.activeMissionScripts.Contains(scriptName)
 				&& !vars.previousMissionScripts.Contains(scriptName);
-		}
-		else {
-			// Pole Position (entry) retains its original title detection.
-			var missionWatcher = vars.memoryWatchers["missionName"];
-			var missionName = mission.Key.Replace(" (start)", "");
-
-			missionStarted = missionWatcher.Current != missionWatcher.Old && missionWatcher.Current == missionName;
-		}
-		if (settings[mission.Key] && missionStarted && !vars.split.Contains(mission.Key)) {
-			vars.split.Add(mission.Key);
-			vars.doSplit = true;
+			if (settings[mission.Key] && missionStarted && !vars.split.Contains(mission.Key)) {
+				vars.split.Add(mission.Key);
+				vars.doSplit = true;
+			}
 		}
 	}
 
